@@ -1,66 +1,99 @@
-STEP 1 :- PROJECT CODE
-INPUT:-
-
 #include <iostream>
+#include <queue>
+
 using namespace std;
 
 struct Node {
     int data;
     Node* left;
     Node* right;
-    
-    Node(int val) {
-        data = val;
-        left = nullptr;
-        right = nullptr;
+
+    Node(int data) {
+        this->data = data;
+        left = right = nullptr;
     }
 };
 
-class BST {
+class BinarySearchTree {
 public:
     Node* root;
-    
-    BST() {
+
+    BinarySearchTree() {
         root = nullptr;
     }
 
-    Node* insert(Node* node, int val) {
-        if (node == nullptr) {
-            return new Node(val);
-        }
-        if (val < node->data) {
-            node->left = insert(node->left, val);
-        } else if (val > node->data) {
-            node->right = insert(node->right, val);
-        }
-        return node;
+    // Search for a value in the BST
+    bool search(int value) {
+        return searchRecursive(root, value);
     }
 
-    Node* search(Node* node, int val) {
-        if (node == nullptr || node->data == val) {
-            return node;
-        }
-        if (val < node->data) {
-            return search(node->left, val);
-        }
-        return search(node->right, val);
+    // Insert a value into the BST
+    void insert(int value) {
+        root = insertRecursive(root, value);
     }
 
-    Node* findMin(Node* node) {
-        while (node && node->left != nullptr) {
-            node = node->left;
-        }
-        return node;
+    // Delete a value from the BST
+    void deleteNode(int value) {
+        root = deleteRecursive(root, value);
     }
 
-    Node* deleteNode(Node* root, int val) {
-        if (root == nullptr) return root;
-        
-        if (val < root->data) {
-            root->left = deleteNode(root->left, val);
-        } else if (val > root->data) {
-            root->right = deleteNode(root->right, val);
+    // Inorder traversal
+    void inorder() {
+        inorderRecursive(root);
+        cout << endl;
+    }
+
+    // Postorder traversal
+    void postorder() {
+        postorderRecursive(root);
+        cout << endl;
+    }
+
+    // Preorder traversal
+    void preorder() {
+        preorderRecursive(root);
+        cout << endl;
+    }
+
+private:
+    // Recursive search function
+    bool searchRecursive(Node* root, int value) {
+        if (root == nullptr) {
+            return false;
+        }
+        if (root->data == value) {
+            return true;
+        } else if (value < root->data) {
+            return searchRecursive(root->left, value);
         } else {
+            return searchRecursive(root->right, value);
+        }
+    }
+
+    // Recursive insert function
+    Node* insertRecursive(Node* root, int value) {
+        if (root == nullptr) {
+            return new Node(value);
+        }
+        if (value < root->data) {
+            root->left = insertRecursive(root->left, value);
+        } else if (value > root->data) {
+            root->right = insertRecursive(root->right, value);
+        }
+        return root;
+    }
+
+    // Recursive delete function
+    Node* deleteRecursive(Node* root, int value) {
+        if (root == nullptr) {
+            return root;
+        }
+        if (value < root->data) {
+            root->left = deleteRecursive(root->left, value);
+        } else if (value > root->data) {
+            root->right = deleteRecursive(root->right, value);
+        } else {
+            // Node with only one child or no child
             if (root->left == nullptr) {
                 Node* temp = root->right;
                 delete root;
@@ -70,135 +103,102 @@ public:
                 delete root;
                 return temp;
             }
-            Node* temp = findMin(root->right);
+            // Node with two children: Get the inorder successor (smallest in the right subtree)
+            Node* temp = minValueNode(root->right);
             root->data = temp->data;
-            root->right = deleteNode(root->right, temp->data);
+            root->right = deleteRecursive(root->right, temp->data);
         }
         return root;
     }
 
-    void inOrder(Node* node) {
-        if (node == nullptr) return;
-        inOrder(node->left);
-        cout << node->data << " ";
-        inOrder(node->right);
+    // Find the node with the minimum value in a subtree
+    Node* minValueNode(Node* node) {
+        Node* current = node;
+        while (current && current->left != nullptr) {
+            current = current->left;
+        }
+        return current;
     }
 
-    void preOrder(Node* node) {
-        if (node == nullptr) return;
-        cout << node->data << " ";
-        preOrder(node->left);
-        preOrder(node->right);
+    // Recursive inorder traversal
+    void inorderRecursive(Node* root) {
+        if (root != nullptr) {
+            inorderRecursive(root->left);
+            cout << root->data << " ";
+            inorderRecursive(root->right);
+        }
     }
 
-    void postOrder(Node* node) {
-        if (node == nullptr) return;
-        postOrder(node->left);
-        postOrder(node->right);
-        cout << node->data << " ";
+    // Recursive postorder traversal
+    void postorderRecursive(Node* root) {
+        if (root != nullptr) {
+            postorderRecursive(root->left);
+            postorderRecursive(root->right);
+            cout << root->data << " ";
+        }
+    }
+
+    // Recursive preorder traversal
+    void preorderRecursive(Node* root) {
+        if (root != nullptr) {
+            cout << root->data << " ";
+            preorderRecursive(root->left);
+            preorderRecursive(root->right);
+        }
     }
 };
 
 int main() {
-    BST tree;
-    tree.root = tree.insert(tree.root, 50);
-    tree.insert(tree.root, 30);
-    tree.insert(tree.root, 20);
-    tree.insert(tree.root, 40);
-    tree.insert(tree.root, 70);
-    tree.insert(tree.root, 60);
-    tree.insert(tree.root, 80);
+    BinarySearchTree bst;
 
-    cout << "InOrder traversal: ";
-    tree.inOrder(tree.root);
-    cout << endl;
+    // Taking input from user
+    int choice, value;
+    while (true) {
+        cout << "1. Search" << endl;
+        cout << "2. Insert" << endl;
+        cout << "3. Delete" << endl;
+        cout << "4. Inorder traversal" << endl;
+        cout << "5. Postorder traversal" << endl;
+        cout << "6. Preorder traversal" << endl;
+        cout << "7. Exit" << endl;
+        cout << "Enter your choice: ";
+        cin >> choice;
 
-    cout << "PreOrder traversal: ";
-    tree.preOrder(tree.root);
-    cout << endl;
-
-    cout << "PostOrder traversal: ";
-    tree.postOrder(tree.root);
-    cout << endl;
-
-    cout << "Search for 40: " << (tree.search(tree.root, 40) != nullptr ? "Found" : "Not Found") << endl;
-    
-    cout << "Delete 20\n";
-    tree.deleteNode(tree.root, 20);
-    cout << "InOrder traversal after deletion: ";
-    tree.inOrder(tree.root);
-    cout << endl;
+        switch (choice) {
+            case 1:
+                cout << "Enter value to search: ";
+                cin >> value;
+                if (bst.search(value)) {
+                    cout << "Value found" << endl;
+                } else {
+                    cout << "Value not found" << endl;
+                }
+                break;
+            case 2:
+                cout << "Enter value to insert: ";
+                cin >> value;
+                bst.insert(value);
+                break;
+            case 3:
+                cout << "Enter value to delete: ";
+                cin >> value;
+                bst.deleteNode(value);
+                break;
+            case 4:
+                bst.inorder();
+                break;
+            case 5:
+                bst.postorder();
+                break;
+            case 6:
+                bst.preorder();
+                break;
+            case 7:
+                exit(0);
+            default:
+                cout << "Invalid choice" << endl;
+        }
+    }
 
     return 0;
 }
-
-OUTPUT:-
-InOrder traversal: 20 30 40 50 60 70 80
-PreOrder traversal: 50 30 20 40 70 60 80
-PostOrder traversal: 20 40 30 60 80 70 50
-Search for 40: Found
-Delete 20
-InOrder traversal after deletion: 30 40 50 60 70 80 
-
-=== Code Execution Successful ===
-
-STEP 2:- PROJECT DOCUMENT
-
-Programming Language: C++
-Development Environment: Any C++ compatible IDE (e.g., Visual Studio, DevCpp)
-Project Details: Overview,Features and Functionalities,Usage
-Project Title: Binary Search Tree (BST)  Implementation 
-
-Implement Binary Search Tree with Following functions:
-- search
-- insert
-- delete
-- inorder traversal
-- preorder traversal
-- postorder traversal
-
-
-Overview:
-
-The project involves implementing a Binary Search Tree (BST) in C++. The BST is a fundamental data structure in computer science used for efficient data storage, retrieval, and manipulation. The project includes the core functionalities of a BST: insertion, search, and deletion of nodes. Additionally, it includes methods for in-order, pre-order, and post-order tree traversals to display the elements in different sequences.
-
-Features and Functionalities:
-
-Node Structure:
-
-Each node in the BST contains an integer data, and pointers to the left and right children.
-BST Class:
-
-The class encapsulates the BST root and provides methods for various operations.
-
-
-Insertion:
-Inserts a new value into the BST while maintaining its properties. Values less than the current node go to the left, and values greater go to the right.
-
-Search:
-Searches for a specific value in the BST and returns the node if found, otherwise returns NULL.
-
-Deletion:
-Deletes a node with a given value from the BST. Handles three cases:
-Node with no children (leaf node).
-Node with one child.
-Node with two children, where the node is replaced with its in-order successor.
-
-
-Traversal Methods:
-In-order Traversal: Visits nodes in ascending order (left, root, right).
-Pre-order Traversal: Visits nodes in root-first order (root, left, right).
-Post-order Traversal: Visits nodes in leaf-first order (left, right, root).
-
-Time Complexity:
-Average Case : O(log n) for insertion, deletion, and search operations.
- Worst Case : O(n) for insertion, deletion, and search operations in an unbalanced BST.
-
-Usage:
-The main function demonstrates the usage of the BST class by performing a series of insertions, a search, a deletion, and different types of traversals. The following operations are performed:
-
-Insert values 20 30 40 50 60 70 80
-Display the tree using in-order, pre-order, and post-order traversals.
-Search for the value 40.
-Delete the node with the value 20.
-Display the tree using in-order traversal after deletion.
